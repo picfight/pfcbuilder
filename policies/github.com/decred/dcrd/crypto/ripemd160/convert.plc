@@ -1,0 +1,7 @@
+{
+  "PackageName": "github.com/decred/dcrd/crypto/ripemd160",
+  "RedirectPackageTo": "github.com/picfight/ripemd160",
+  "SkipProcessing": "NO",
+  "Files": [
+  ]
+}

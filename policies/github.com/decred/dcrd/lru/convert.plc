@@ -1,0 +1,12 @@
+{
+  "PackageName": "github.com/decred/dcrd/lru",
+  "RedirectPackageTo": "github.com/picfight/lru",
+  "SkipProcessing": "NO",
+  "Files": [
+    {
+      "FileName": "go.mod",
+      "CopyAsIs": "NO",
+      "UseAutoReplacer": "YES"
+    }
+  ]
+}
