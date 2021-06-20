@@ -5,8 +5,8 @@ import (
 	"github.com/jfixby/pin"
 	"github.com/jfixby/pin/fileops"
 	"github.com/jfixby/pin/lang"
-	"github.com/picfight/pfcd/pfcdbuilder/deps"
-	"github.com/picfight/pfcd/pfcdbuilder/ut"
+	"github.com/picfight/pfcbuilder/deps"
+	"github.com/picfight/pfcbuilder/ut"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -62,7 +62,8 @@ func LoadGoMods(root *deps.GitTag, target *deps.GitTag, cache *deps.UrlCache) {
 	for _, v := range ds.depsList {
 		pin.D(fmt.Sprintf("%v", v), ds.depsSet[v])
 		//pin.D("", *v)
-		//ResolveTarget(root, v)
+		t := ResolveTarget(root, v)
+
 	}
 }
 

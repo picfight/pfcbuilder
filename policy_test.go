@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/jfixby/pin/lang"
-	"github.com/picfight/pfcd/pfcdbuilder/policy"
+	"github.com/picfight/pfcbuilder/policy"
 	"io/ioutil"
 	"os"
 	"testing"

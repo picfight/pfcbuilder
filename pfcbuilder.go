@@ -7,11 +7,11 @@ import (
 	"github.com/jfixby/pin/commandline"
 	"github.com/jfixby/pin/fileops"
 	"github.com/jfixby/pin/lang"
-	"github.com/picfight/pfcd/pfcdbuilder/builder"
-	"github.com/picfight/pfcd/pfcdbuilder/deps"
-	"github.com/picfight/pfcd/pfcdbuilder/policy"
-	"github.com/picfight/pfcd/pfcdbuilder/replacer"
-	"github.com/picfight/pfcd/pfcdbuilder/ut"
+	"github.com/picfight/pfcbuilder/builder"
+	"github.com/picfight/pfcbuilder/deps"
+	"github.com/picfight/pfcbuilder/policy"
+	"github.com/picfight/pfcbuilder/replacer"
+	"github.com/picfight/pfcbuilder/ut"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -21,7 +21,7 @@ import (
 const POLICY_FILE = "convert.plc"
 
 func main() {
-
+// set GO111MODULE=on
 	target := &deps.GitTag{
 		GitOrg:     "decred",
 		GitRepo:    "dcrd",

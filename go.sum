@@ -1,0 +1,6 @@
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/jfixby/coinknife v0.0.0-20190926203656-03d129b9318a h1:LIrKPA4Rmu4jiqnqjEB43hMUwjMADinQKoNfMRcTuys=
+github.com/jfixby/coinknife v0.0.0-20190926203656-03d129b9318a/go.mod h1:xSXEkW0zBqOCyL49Pn5m2jMtjx+rjlB/EuPCJeP9g5Q=
+github.com/jfixby/pin v0.0.0-20201025190237-2be07f449d81 h1:kq2KlI3fzE3s9KFpmI7OCnJHqfJtvNhAks/Vs9zjUv4=
+github.com/jfixby/pin v0.0.0-20201025190237-2be07f449d81/go.mod h1:fcyyZW36sY5GM2qsX/sewjJu7y5ngGKoELUbDEccDqY=
