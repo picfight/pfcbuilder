@@ -4,3 +4,5 @@ github.com/jfixby/coinknife v0.0.0-20190926203656-03d129b9318a h1:LIrKPA4Rmu4jiq
 github.com/jfixby/coinknife v0.0.0-20190926203656-03d129b9318a/go.mod h1:xSXEkW0zBqOCyL49Pn5m2jMtjx+rjlB/EuPCJeP9g5Q=
 github.com/jfixby/pin v0.0.0-20201025190237-2be07f449d81 h1:kq2KlI3fzE3s9KFpmI7OCnJHqfJtvNhAks/Vs9zjUv4=
 github.com/jfixby/pin v0.0.0-20201025190237-2be07f449d81/go.mod h1:fcyyZW36sY5GM2qsX/sewjJu7y5ngGKoELUbDEccDqY=
+github.com/stevenle/topsort v0.2.0 h1:LLWgtp34HPX6/RBDRS0kElVxGOTzGBLI1lSAa5Lb46k=
+github.com/stevenle/topsort v0.2.0/go.mod h1:ck2WG2/ZrOr6dLApQ/5Xrqy5wv3T0qhKYWE7r9tkibc=

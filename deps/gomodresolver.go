@@ -3,9 +3,11 @@ package deps
 import (
 	"fmt"
 	"github.com/jfixby/pin"
+	"github.com/jfixby/pin/fileops"
 	"github.com/jfixby/pin/lang"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -45,27 +47,75 @@ func GetXML(url string) (string, error) {
 }
 
 type UrlCache struct {
-	data map[string]string
-	set  map[string]bool
+	LocalFolder string
+	data        map[string]string
+	set         map[string]bool
 }
 
 func (c *UrlCache) Get(url string) string {
-	return c.data[url]
+	c.setup()
+	return c.data[Url2key(url)]
+}
+
+func Url2key(url string) string {
+	url = strings.ReplaceAll(url, "/", "_")
+	url = strings.ReplaceAll(url, ":", "_")
+
+	return url
 }
 
 func (c *UrlCache) Contains(url string) bool {
-	return c.set[url]
+	c.setup()
+	return c.set[Url2key(url)]
 }
 
 func (c *UrlCache) Put(url string, data string) {
+	c.setup()
+
+	c.set[Url2key(url)] = true
+	c.data[Url2key(url)] = data
+
+	pin.MakeDirs(c.LocalFolder)
+
+	output := filepath.Join(c.LocalFolder, Url2key(url))
+	fileops.WriteStringToFile(output, data)
+}
+
+var cachedFiles = func(file string) bool {
+	//_, f := filepath.Split(file)
+	//if strings.Index(f, "_") == 0 {
+	//	pin.D("drop", file)
+	//	return false
+	//}
+	return fileops.IsFile(file)
+}
+
+func (c *UrlCache) Load() {
+	c.setup()
+
+	pin.MakeDirs(c.LocalFolder)
+
+	list := fileops.ListFiles(c.LocalFolder, cachedFiles, true)
+	//pin.D("list", list)
+
+	for _, e := range list {
+		_, fn := filepath.Split(e)
+		data := fileops.ReadFileToString(e)
+		c.data[fn] = data
+		c.set[fn] = true
+	}
+
+	//pin.D("")
+	//panic("")
+}
+
+func (c *UrlCache) setup() {
 	if c.data == nil {
 		c.data = map[string]string{}
 	}
 	if c.set == nil {
 		c.set = map[string]bool{}
 	}
-	c.set[url] = true
-	c.data[url] = data
 }
 
 func ReadGoMod(tag *GitTag, cache *UrlCache) *GoModHandler {
@@ -76,7 +126,7 @@ func ReadGoMod(tag *GitTag, cache *UrlCache) *GoModHandler {
 	url := tag.ResolveFile("go.mod")
 	iData := ""
 	if cache.Contains(url) {
-		//pin.D("cached ", url)
+		// pin.D("cached ", url)
 		iData = cache.Get(url)
 	} else {
 		pin.D("reading", url)
@@ -102,7 +152,7 @@ func ReadGoMod(tag *GitTag, cache *UrlCache) *GoModHandler {
 	{
 		sr := strings.Split(lines[indexM], "module ")
 		pin.AssertTrue("", len(sr) == 2)
-		result.Tag = sr[1]
+		result.Name = sr[1]
 	}
 
 	index0 := findLineWith(lines, "require")
@@ -119,6 +169,7 @@ func ReadGoMod(tag *GitTag, cache *UrlCache) *GoModHandler {
 		dep := tokens[0]
 		ver := tokens[1][:len(tokens[1])-1]
 		depp := Dependency{
+			//Name: dep,
 			Import:  Dep(dep),
 			Fork:    Fork(dep),
 			Version: ver,
@@ -135,6 +186,7 @@ func ReadGoMod(tag *GitTag, cache *UrlCache) *GoModHandler {
 		dep := tokens[0][1:]
 		ver := tokens[1][:len(tokens[1])]
 		depp := Dependency{
+			//Name: dep,
 			Import:  Dep(dep),
 			Fork:    Fork(dep),
 			Version: ver,

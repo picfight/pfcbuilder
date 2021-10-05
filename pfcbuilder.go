@@ -26,6 +26,7 @@ func main() {
 		GitOrg:     "decred",
 		GitRepo:    "dcrd",
 		ReleaseTag: "release-v1.6.2",
+		DepVersion: "v1.6.2",
 	}
 
 
@@ -59,15 +60,15 @@ func main() {
 	//	plc := PolicyFor(tag, vx)
 	//
 	//	if plc == nil {
-	//		pin.D("no policy for", vx.Tag)
+	//		pin.D("no policy for", vx.Name)
 	//		pin.D(tag, vx.Dependencies)
-	//		//lang.ReportErr("no policy for %v", vx.Tag)
+	//		//lang.ReportErr("no policy for %v", vx.Name)
 	//		return
 	//	}
 	//
 	//	if plc.IsSkipProcessing() {
-	//		pin.D("skip", vx.Tag)
-	//		processor.AddSkippedPackage(vx.Tag)
+	//		pin.D("skip", vx.Name)
+	//		processor.AddSkippedPackage(vx.Name)
 	//		continue
 	//	}
 	//
@@ -79,7 +80,7 @@ func main() {
 	//	//
 	//	//puotput := output
 	//	//if plc.RedirectPackageTo != "" {
-	//	//	processor.AddRedirect(vx.Tag, plc.RedirectPackageTo)
+	//	//	processor.AddRedirect(vx.Name, plc.RedirectPackageTo)
 	//	//}
 	//	//if !plc.IsSkipProcessing() {
 	//	//	if plc.RedirectPackageTo != "" {
@@ -88,7 +89,7 @@ func main() {
 	//	//	}
 	//	//	ConvertPackage(vx, input, puotput, plc, processor)
 	//	//} else {
-	//	//	pin.D("skip", vx.Tag)
+	//	//	pin.D("skip", vx.Name)
 	//	//}
 	//	pin.D("---------------------------------------------------------------------")
 	//}
@@ -96,9 +97,9 @@ func main() {
 
 func ConvertGoFile(input string, output string, tag string, vx *deps.GoModHandler, plc *policy.PackagePolicy, proc *deps.Processor) {
 
-	I := builder.GoPath(vx.Tag + "/go.mod")
+	I := builder.GoPath(vx.Name + "/go.mod")
 	O := coinknife.Replace(I, input, output)
-	//output + vx.Tag + "/go.mod"
+	//output + vx.Name + "/go.mod"
 	pin.D(I, O)
 	iData := fileops.ReadFileToString(I)
 	for pi, po := range proc.Redirects() {
@@ -113,9 +114,9 @@ func ConvertGoFile(input string, output string, tag string, vx *deps.GoModHandle
 }
 
 func ClearDestination(input string, output string, vx *deps.GoModHandler) {
-	I := builder.GoPath(vx.Tag)
+	I := builder.GoPath(vx.Name)
 	O := coinknife.Replace(I, input, output)
-	//output + vx.Tag + "/go.mod"
+	//output + vx.Name + "/go.mod"
 	os.MkdirAll(O, os.ModePerm)
 	builder.ClearProject(O, ignoredFiles())
 }
@@ -126,17 +127,17 @@ func ConvertPackage(input string, output string, tag string, vx *deps.GoModHandl
 	if 1 == 1 {
 		return
 	}
-	//pin.D("   tag", vx.Tag)
-	//pin.D(" input", input+vx.Tag)
-	//pin.D("output", output+vx.Tag
+	//pin.D("   tag", vx.Name)
+	//pin.D(" input", input+vx.Name)
+	//pin.D("output", output+vx.Name
 	//)
 
 	{
 		//pin.D(p, string(file))
 
-		lang.AssertValue("package name", plc.PackageName, vx.Tag)
+		lang.AssertValue("package name", plc.PackageName, vx.Name)
 
-		I := builder.GoPath(vx.Tag)
+		I := builder.GoPath(vx.Name)
 
 		gofiles := builder.ListFiles(I, nil, builder.DIRECT_CHILDREN, ut.OR(ut.Ext("go"), ut.Name("README.md")))
 		short2long := builder.ShortenFileNames(gofiles)
@@ -173,7 +174,7 @@ func ConvertPackage(input string, output string, tag string, vx *deps.GoModHandl
 				//o := strings.ReplaceAll(i, input, output)
 				o := filepath.Join(output, s)
 				iData := fileops.ReadFileToString(i)
-				iData = coinknife.Replace(iData, vx.Tag, plc.RedirectPackageTo)
+				iData = coinknife.Replace(iData, vx.Name, plc.RedirectPackageTo)
 				fileops.WriteStringToFile(o, iData)
 			}
 		}
@@ -293,7 +294,7 @@ func PolicyFor(tag string, vx *deps.GoModHandler) *policy.PackagePolicy {
 }
 
 func ReadPolicy(vx *deps.GoModHandler, policies string) *policy.PackagePolicy {
-	P, err := filepath.Abs(policies + vx.Tag)
+	P, err := filepath.Abs(policies + vx.Name)
 	lang.CheckErr(err)
 	p := filepath.Join(P, POLICY_FILE)
 

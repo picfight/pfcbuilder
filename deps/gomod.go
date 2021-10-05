@@ -9,10 +9,11 @@ type Dependency struct {
 	Import  string
 	Fork    int
 	Version string
+	//Name string
 }
 
 type GoModHandler struct {
-	Tag          string
+	Name         string
 	Dependencies []Dependency
 }
 
@@ -25,6 +26,8 @@ type GitTag struct {
 	GitRepo    string
 	SubPackage string
 	ReleaseTag string
+	DepVersion string
+	//DepTag string
 }
 
 func (tag *GitTag) ResolveFile(filename string) string {
@@ -53,6 +56,15 @@ func (tag *GitTag) Package() string {
 	return b
 }
 
+func (tag *GitTag) ToString() string {
+	return tag.GitOrg + "/" +
+		tag.GitRepo + "/" +
+		tag.SubPackage + "/" +
+		tag.DepVersion
+}
+
+
+
 //func (t *GitTag) GitOrg() string {
 //	//"github.com/decred/dcrd/"
 //	array := strings.Split(t.Package,"/")
@@ -69,7 +81,7 @@ func (tag *GitTag) Package() string {
 func (v DepsGraph) ListChildrenForVertex(vertexID string) []string {
 	result := []string{}
 
-	//dps := v.g.Vertices[v.Tag]
+	//dps := v.g.Vertices[v.Name]
 	dps := v.Vertices[vertexID]
 	deps := dps.Dependencies
 	DCRD_PREF := "github.com/decred/dcrd/"
@@ -86,7 +98,7 @@ func (v DepsGraph) ListChildrenForVertex(vertexID string) []string {
 			}
 			//pin.D("v.g.Vertices", v.g.Vertices)
 			pin.AssertNotNil(key, cv)
-			result = append(result, cv.Tag)
+			result = append(result, cv.Name)
 			continue
 		}
 	}
@@ -96,7 +108,7 @@ func (v DepsGraph) ListChildrenForVertex(vertexID string) []string {
 func (d DepsGraph) ListVertices() []string {
 	result := []string{}
 	for _, v := range d.Vertices {
-		result = append(result, v.Tag)
+		result = append(result, v.Name)
 	}
 	return result
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/jfixby/pin/lang"
 	"github.com/picfight/pfcbuilder/deps"
 	"github.com/picfight/pfcbuilder/ut"
+	"github.com/stevenle/topsort"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -26,8 +27,31 @@ import (
 //}
 
 func LoadAllGoMods(root *deps.GitTag) {
-	cache := &deps.UrlCache{}
-	LoadGoMods(root, root, cache)
+	cache := &deps.UrlCache{
+		LocalFolder: "GitCache",
+	}
+	cache.Load()
+	graph := topsort.NewGraph()
+
+	ds := &DepCollector{
+		//depsList: []deps.Dependency{},
+		//depsSet:  map[deps.Dependency]int{},
+		graph:    graph,
+		depsTree: map[string]map[string]bool{},
+	}
+
+	LoadGoMods(root, root, cache, ds)
+
+	r, e := graph.TopSort(root.ToString()) // => [C, B, A]
+	lang.CheckErr(e)
+	pin.D("toposort", r)
+
+	handler := &Handler{
+		DepCollector: ds,
+	}
+	for _, handler.i = range r {
+		processDep(handler)
+	}
 
 	//gomod := deps.ReadGoMod(root, cache)
 	//pin.D("gomod", gomod)
@@ -39,46 +63,87 @@ func LoadAllGoMods(root *deps.GitTag) {
 
 }
 
+func processDep(handler *Handler) {
+
+	tag := handler.DepCollector.GetTag(handler.i)
+	kids := handler.DepCollector.ListDepsFor(handler.i)
+	pin.D(fmt.Sprintf("%v", tag), kids)
+	//dep := ParseDep(handler.i)
+
+}
+
 type DepCollector struct {
-	depsList []deps.Dependency
-	depsSet  map[deps.Dependency]int
+	//depsList []deps.Dependency
+	tags     map[string]*deps.GitTag
+	graph    *topsort.Graph
+	depsTree map[string]map[string]bool
 }
 
-func (c *DepCollector) Append(dep deps.Dependency) {
-	if c.depsSet[dep] == 0 {
-		c.depsList = append(c.depsList, dep)
+func (C *DepCollector) Append(target, next *deps.GitTag) {
+	owner := target.ToString()
+	child := next.ToString()
+
+	if C.tags == nil {
+		C.tags = map[string]*deps.GitTag{}
 	}
-	c.depsSet[dep]++
+
+	C.tags[owner] = target
+	C.tags[child] = next
+
+	C.graph.AddEdge(owner, child)
+
+	if C.depsTree[owner] == nil {
+		C.depsTree[owner] = map[string]bool{}
+	}
+	C.depsTree[owner][child] = true
+
 }
 
-func LoadGoMods(root *deps.GitTag, target *deps.GitTag, cache *deps.UrlCache) {
-
-	ds := &DepCollector{
-		[]deps.Dependency{},
-		map[deps.Dependency]int{},
+func (c *DepCollector) ListDepsFor(owner string) []string {
+	r := []string{}
+	for k, _ := range c.depsTree[owner] {
+		//r = append(r, fmt.Sprintf("%v -> %v", k, v))
+		r = append(r, fmt.Sprintf("%v", k))
 	}
-	CollectImport(ds, root, root, cache)
-
-	for _, v := range ds.depsList {
-		pin.D(fmt.Sprintf("%v", v), ds.depsSet[v])
-		//pin.D("", *v)
-		t := ResolveTarget(root, v)
-
-	}
+	return r
 }
 
-func CollectImport(ds *DepCollector, root, target *deps.GitTag, cache *deps.UrlCache) {
-	gomod := deps.ReadGoMod(target, cache)
+func (C *DepCollector) GetTag(tag string) *deps.GitTag {
+	return C.tags[tag]
+}
+
+//func (c *DepCollector) ListDepsFor(owner string) map[deps.Dependency]bool {
+//	return c.depsTree[owner]
+//}
+
+func LoadGoMods(root *deps.GitTag, target *deps.GitTag, cache *deps.UrlCache, ds *DepCollector) {
+
+	CollectImport(ds, root, target, cache)
+
+	//for _, v := range ds.depsList {
+	//	pin.D(fmt.Sprintf("%v", v), ds.depsSet[v])
+	//	//pin.D("", *v)
+	//}
+
+}
+
+func CollectImport(ds *DepCollector, rootTag, targetTag *deps.GitTag, cache *deps.UrlCache) *deps.GoModHandler {
+	gomod := deps.ReadGoMod(targetTag, cache)
 
 	for _, dep := range gomod.Dependencies {
-		if strings.HasPrefix(dep.Import, root.Package()) {
+		if strings.HasPrefix(dep.Import, rootTag.Package()) {
 			//pin.D("", dep)
-			next := ResolveTarget(root, dep)
-			CollectImport(ds, root, next, cache)
-			ds.Append(dep)
+			nextTag := ResolveTarget(rootTag, dep)
+			//nextGomod :=
+			CollectImport(ds, rootTag, nextTag, cache)
+			ds.Append(targetTag, nextTag)
+
+			//ds.Append(gomod.Name, targetTag.DepVersion, nextGomod.Name, nextTag.DepVersion)
 		}
 		//pin.D("", dep)
 	}
+
+	return gomod
 
 }
 
@@ -88,10 +153,12 @@ func ResolveTarget(root *deps.GitTag, dep deps.Dependency) *deps.GitTag {
 	//packagetag := path.Base(subtag)
 
 	target := &deps.GitTag{
-		GitOrg:     "decred",
-		GitRepo:    "dcrd",
+		GitOrg:     root.GitOrg,
+		GitRepo:    root.GitRepo,
 		SubPackage: subtag,
 		ReleaseTag: subtag + "/" + dep.Version,
+		DepVersion: dep.Version,
+		//DepTag:     dep.Name + " " + dep.Version,
 	}
 
 	//dcrjson%2Fv3.1.0
